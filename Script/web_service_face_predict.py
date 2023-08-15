@@ -14,7 +14,7 @@ import logging
 
 
 confidence_t=0.9
-recognition_t=0.5
+recognition_t=0.8
 required_size = (160,160)
 l2_normalizer = Normalizer('l2')
 
@@ -83,12 +83,20 @@ def detect(img, detector,encoder,encoding_dict, filename):
         name = 'Inconnu'
 
         distance = float("inf")
+        app.logger.info("name before")
+        app.logger.info(encoding_dict.items())
+        app.logger.info(name)
         for db_name, db_encode in encoding_dict.items():
+            app.logger.info(db_name)
             dist = cosine(db_encode, encode)
             if dist < recognition_t and dist < distance:
                 name = db_name
                 distance = dist
         img = toRGB(img)
+        app.logger.info("name after")
+        app.logger.info( encoding_dict.items())
+        app.logger.info(name)
+        
         if name == 'Inconnu':
             cv2.rectangle(img, pt_1, pt_2, (0, 255, 0), 2)
             cv2.putText(img, name, pt_1, cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 200, 200), 1)
@@ -131,23 +139,24 @@ def postRequestPredict():
             json = request.json
             src_img_base64 = json["img"]
             name = json["name"]
-            app.logger.info(name)
+            edit_mode = json["edit"]
             
             srcImg = stringToImage(src_img_base64)
+            #app.logger.info(src_img_base64)
             outImg, match = detect(srcImg , face_detector , face_encoder , encoding_dict, name)        
 
-            if match == False: 
+            if match == False and edit_mode == 1: 
                 add_face_embedding(srcImg, name)
         
             # save the encodings    
             with open(encodings_path, 'wb') as file:
                 pickle.dump(encoding_dict, file)
             
-            im_pil = Image.fromarray(outImg)
-            im_pil.save("pil_img.jpg")
+            #im_pil = Image.fromarray(outImg)
+            # im_pil.save("pil_img.jpg")
 
             im_pil2 = Image.fromarray(toRGB(outImg))
-            im_pil2.save("pil_img2.jpg")
+            # im_pil2.save("pil_img2.jpg")
 
             buffered = io.BytesIO()
             im_pil2.save(buffered, format="JPEG")

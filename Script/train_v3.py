@@ -61,14 +61,16 @@ if os.path.exists(os.path.join(working_dir,'encodings.pkl')):
     print("Encoding exist")
     encoding_dict = load_pickle(encodings_path)
 else:
-    print("Encoding not exist")
+    print("Dictionaire des visage non trouvé, creation")
     encoding_dict = dict()
 
 # Get the file
 temp_path = os.path.join(working_dir, 'temp_img')
+print("Entrainement du modele en cours...")
 for file in os.listdir(temp_path):
     if file.endswith(".jpg"):
         filename = os.path.join(temp_path, file)
+        print("Ajout de {0}".format(filename))
         add_face_embedding(filename)
 
 with open(encodings_path, 'wb') as file:
@@ -76,7 +78,7 @@ with open(encodings_path, 'wb') as file:
     
 end = time.time()
 
-print("Running time: ", end - start)
+#print("Running time: ", end - start)
 
 
 
